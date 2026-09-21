@@ -474,37 +474,148 @@ export function CallEngine({ lead, onLogged }: Props) {
       {phase === "outputs" && outputs && (
         <>
           <Separator />
-          <div className="flex items-center gap-2">
-            <Badge className="text-[10px]">{MOVEMENT_LABEL[outputs.movement]}</Badge>
-            <span className="text-[11px] text-muted-foreground">{def.label} · {outcome}</span>
+
+          {/* Action Summary — shows the complete outcome before the operator scrolls. */}
+          <div className="rounded-md border border-primary/40 bg-primary/5 p-3 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <Title>Ready to complete</Title>
+                <div className="mt-0.5 text-sm font-semibold">
+                  {lead.name ?? "Customer"}
+                </div>
+              </div>
+
+              <Badge className="text-[10px]">
+                {MOVEMENT_LABEL[outputs.movement]}
+              </Badge>
+            </div>
+
+            <div className="grid gap-2 sm:grid-cols-2">
+              <div className="rounded border bg-background p-2">
+                <Title>Next action</Title>
+                <div className="mt-1 text-xs font-medium">
+                  {outputs.nextStep.label}
+                </div>
+                <div className="text-[10px] text-muted-foreground">
+                  Due{" "}
+                  {new Date(outputs.nextStep.dueAt).toLocaleString([], {
+                    day: "numeric",
+                    month: "short",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}
+                </div>
+              </div>
+
+              <div className="rounded border bg-background p-2">
+                <Title>Owner</Title>
+                <div className="mt-1 text-xs font-medium">
+                  {mv.actor.name}
+                </div>
+                <div className="text-[10px] text-muted-foreground">
+                  Follow-up will be armed automatically
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5">
+              <Badge variant="secondary" className="text-[10px]">
+                ✓ Customer message ready
+              </Badge>
+              <Badge variant="secondary" className="text-[10px]">
+                ✓ Follow-up ready
+              </Badge>
+              <Badge variant="secondary" className="text-[10px]">
+                ✓ Next step ready
+              </Badge>
+            </div>
+
+            <div className="text-[10px] text-muted-foreground">
+              {def.label} · Outcome: {outcome}
+            </div>
           </div>
 
           <div className="space-y-1.5">
             <Title>1 · Send now</Title>
-            {outputs.mediaHint && <div className="text-[10px] text-muted-foreground">{outputs.mediaHint}</div>}
-            <Textarea rows={8} className="text-xs" value={nowText} onChange={(e) => setNowText(e.target.value)} />
+            {outputs.mediaHint && (
+              <div className="text-[10px] text-muted-foreground">
+                {outputs.mediaHint}
+              </div>
+            )}
+            <Textarea
+              rows={8}
+              className="text-xs"
+              value={nowText}
+              onChange={(e) => setNowText(e.target.value)}
+            />
             <div className="flex gap-2">
-              <Button size="sm" variant="outline" className="flex-1" onClick={() => copy(nowText)}>Copy for WhatsApp</Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex-1"
+                onClick={() => copy(nowText)}
+              >
+                Copy for WhatsApp
+              </Button>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Title>2 · Follow-up · {new Date(outputs.followUp.dueAt).toLocaleString([], { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}</Title>
-            <div className="text-[10px] text-muted-foreground">{outputs.followUp.trigger} — it cancels itself if the customer moves.</div>
-            <Textarea rows={4} className="text-xs" value={followText} onChange={(e) => setFollowText(e.target.value)} />
+            <Title>
+              2 · Follow-up ·{" "}
+              {new Date(outputs.followUp.dueAt).toLocaleString([], {
+                day: "numeric",
+                month: "short",
+                hour: "numeric",
+                minute: "2-digit",
+              })}
+            </Title>
+            <div className="text-[10px] text-muted-foreground">
+              {outputs.followUp.trigger} — it cancels itself if the customer moves.
+            </div>
+            <Textarea
+              rows={4}
+              className="text-xs"
+              value={followText}
+              onChange={(e) => setFollowText(e.target.value)}
+            />
           </div>
 
           <div className="rounded-md border p-2">
             <Title>3 · Next step</Title>
-            <div className="text-xs font-medium">{outputs.nextStep.label}</div>
+            <div className="text-xs font-medium">
+              {outputs.nextStep.label}
+            </div>
             <div className="text-[11px] text-muted-foreground">
-              Due {new Date(outputs.nextStep.dueAt).toLocaleString([], { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })} · Owner {mv.actor.name}
+              Due{" "}
+              {new Date(outputs.nextStep.dueAt).toLocaleString([], {
+                day: "numeric",
+                month: "short",
+                hour: "numeric",
+                minute: "2-digit",
+              })}{" "}
+              · Owner {mv.actor.name}
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setPhase("capture")}>Back</Button>
-            <Button className="flex-1" size="sm" onClick={commit}>Send, arm follow-up and set next step</Button>
+          {/* Sticky completion bar keeps the primary action available while reviewing. */}
+          <div className="sticky bottom-0 z-20 -mx-3 border-t bg-background/95 px-3 py-2 backdrop-blur">
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPhase("capture")}
+              >
+                Back
+              </Button>
+              <Button
+                className="flex-1"
+                size="sm"
+                onClick={commit}
+              >
+                Send, arm follow-up and set next step
+              </Button>
+            </div>
           </div>
         </>
       )}
